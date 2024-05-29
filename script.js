@@ -10,18 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var durationSpan = document.getElementById("duration");
     var fullscreenButton = document.getElementById("fullscreen");
 
-    var queryString = window.location.search;
-    var urlParams = new URLSearchParams(queryString);
-    var videoUrl = urlParams.get('q');
-
-     // إذا كانت معلمة الاستعلام تحتوي على قيمة صالحة
-    if (videoUrl) {
-        // تعيين مصدر الفيديو بناءً على قيمة معلمة الاستعلام
-        video.src = videoUrl;
-    } else {
-        // في حالة عدم توفر قيمة لمعلمة الاستعلام، يمكنك تعيين مصدر افتراضي للفيديو هنا
-        video.src = "المسار/الى/الفيديو/الافتراضي.mp4";
-    }
+    
 
 
     // Function to toggle play/pause state
