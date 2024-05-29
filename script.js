@@ -1,4 +1,3 @@
-// scripts.js
 document.addEventListener("DOMContentLoaded", function() {
     var video = document.getElementById("video");
     var overlay = document.getElementById("overlay");
@@ -10,8 +9,8 @@ document.addEventListener("DOMContentLoaded", function() {
     var durationSpan = document.getElementById("duration");
     var fullscreenButton = document.getElementById("fullscreen");
 
-    
-
+    var progressBar = document.getElementById("progress-bar");
+    var loadingOverlay = document.querySelector(".loading-overlay");
 
     // Function to toggle play/pause state
     function togglePlayPause() {
@@ -109,4 +108,30 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         return min + ":" + sec;
     }
+
+    video.addEventListener("loadedmetadata", function() {
+        var duration = video.duration;
+        progressBar.max = duration;
+    });
+
+    video.addEventListener("progress", function() {
+        var bufferedEnd = video.buffered.end(0);
+        var duration = video.duration;
+        if (duration > 0) {
+            progressBar.value = (bufferedEnd / duration) * 100;
+        }
+    });
+
+    video.addEventListener("timeupdate", function() {
+        var currentTime = video.currentTime;
+        progressBar.value = currentTime;
+    });
+
+    video.addEventListener("waiting", function() {
+        loadingOverlay.style.display = "block";
+    });
+
+    video.addEventListener("playing", function() {
+        loadingOverlay.style.display = "none";
+    });
 });

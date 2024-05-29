@@ -148,3 +148,34 @@ body {
     justify-content: center; /* توسيط أفقي للأيقونة */
     align-items: center; /* توسيط عمودي للأيقونة */
 }
+
+
+
+
+
+
+
+.loading-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none; /* Initially hidden */
+}
+
+.loading-overlay progress {
+    width: 100px; /* Adjust size as needed */
+    height: 10px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: transparent;
+    border: none;
+}
+
+.loading-overlay progress::-webkit-progress-bar {
+    background-color: #ccc;
+}
+
+.loading-overlay progress::-webkit-progress-value {
+    background-color: #007bff; /* Adjust color as needed */
+}
