@@ -19,14 +19,25 @@
         <div class="controls" id="controls">
             <button id="play-pause" class="control-button" aria-label="تشغيل/إيقاف"><i class="fas fa-play"></i></button>
             <input type="range" id="seek-bar" value="0" class="seek-bar">
+            <div id="seek-tooltip" class="seek-tooltip">00:00</div>
             <span id="current-time" class="time">0:00</span> / <span id="duration" class="time">0:00</span>
             <button id="mute" class="control-button"><i class="fas fa-volume-up"></i></button>
-            <input type="range" id="volume-bar" value="1" step="0.1" min="0" max="1" class="volume-bar">
+            <div id="volume-container">
+                <input type="range" id="volume-bar" min="0" max="1" step="0.1" value="1" class="volume-bar">
+            </div>
             <button id="fullscreen" class="control-button"><i class="fas fa-expand"></i></button>
-            <img src="https://archive.org/download/how-to-download-office-2021-activation/MmqltbRw62pziqDjZLaafRIvQI.webp" alt="@Aio.tv1" class="logo">
+            <button id="settings" class="control-button"><i class="fas fa-cog"></i></button>
+            <img src="https://archive.org/download/how-to-download-office-2021-activation/MmqltbRw62pziqDjZLaafRIvQI.webp" alt="@Aio.tv1" style="width: auto; height: 20px; margin-left: 5px;">
         </div>
         <div id="overlay" class="overlay">
             <i class="fas fa-play"></i>
+        </div>
+        <div id="context-menu" class="context-menu">
+            <ul>
+                <li id="context-play-pause">تشغيل/إيقاف</li>
+                <li id="context-mute">كتم/إلغاء الكتم</li>
+                <li id="context-fullscreen">ملء الشاشة</li>
+            </ul>
         </div>
     </div>
     <script src="script.js"></script>

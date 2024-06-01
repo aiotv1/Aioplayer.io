@@ -8,127 +8,222 @@ document.addEventListener("DOMContentLoaded", function() {
     var currentTimeSpan = document.getElementById("current-time");
     var durationSpan = document.getElementById("duration");
     var fullscreenButton = document.getElementById("fullscreen");
+    var settingsButton = document.getElementById("settings");
     var progressBar = document.getElementById("progress-bar");
     var loadingOverlay = document.querySelector(".loading-overlay");
+    var contextMenu = document.getElementById("context-menu");
+    var seekTooltip = document.getElementById("seek-tooltip");
 
     // Function to toggle play/pause state
     function togglePlayPause() {
         if (video.paused || video.ended) {
             video.play();
-            playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+            overlay.style.opacity = 1;
+            overlay.classList.add("playing");
+            setTimeout(function() {
+                overlay.style.opacity = 0;
+            }, 1000);
         } else {
             video.pause();
-            playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
+            overlay.style.opacity = 1;
+            overlay.classList.remove("playing");
+            setTimeout(function() {
+                overlay.style.opacity = 0;
+            }, 1000);
         }
     }
 
-    // Event listener for play/pause button click
+    // Function to update play/pause button icon
+    function updatePlayPauseButton() {
+        if (video.paused || video.ended) {
+            playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
+        } else {
+            playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+    }
+
+    // Function to update the seek bar
+    function updateSeekBar() {
+        var value = (100 / video.duration) * video.currentTime;
+        seekBar.value = value;
+        currentTimeSpan.textContent = formatTime(video.currentTime);
+    }
+
+    // Function to update the volume bar
+    function updateVolumeBar() {
+        volumeBar.value = video.volume;
+        if (video.muted) {
+            muteButton.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        } else {
+            muteButton.innerHTML = '<i class="fas fa-volume-up"></i>';
+        }
+    }
+
+    // Function to format time in hh:mm:ss
+    function formatTime(time) {
+        var hours = Math.floor(time / 3600);
+        var minutes = Math.floor((time - (hours * 3600)) / 60);
+        var seconds = Math.floor(time - (hours * 3600) - (minutes * 60));
+        if (hours > 0) {
+            return hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+        } else {
+            return minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+        }
+    }
+
+    // Play/pause button click event
     playPauseButton.addEventListener("click", togglePlayPause);
+    video.addEventListener("play", updatePlayPauseButton);
+    video.addEventListener("pause", updatePlayPauseButton);
+    video.addEventListener("timeupdate", updateSeekBar);
 
-    // Event listener for video click
-    video.addEventListener("click", togglePlayPause);
-
-    // Event listener for mute button click
-    muteButton.addEventListener("click", function() {
-        video.muted = !video.muted;
-        muteButton.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-    });
-
-    // Event listener for seek bar input
+    // Seek bar change event
     seekBar.addEventListener("input", function() {
         var time = video.duration * (seekBar.value / 100);
         video.currentTime = time;
     });
 
-    // Update the seek bar as the video plays
-    video.addEventListener("timeupdate", function() {
-        var value = (100 / video.duration) * video.currentTime;
-        seekBar.value = value;
-        currentTimeSpan.textContent = formatTime(video.currentTime);
-        durationSpan.textContent = formatTime(video.duration);
+    // Mute button click event
+    muteButton.addEventListener("click", function() {
+        video.muted = !video.muted;
+        updateVolumeBar();
     });
 
-    // Update the video volume
+    // Volume bar change event
     volumeBar.addEventListener("input", function() {
         video.volume = volumeBar.value;
+        video.muted = volumeBar.value === "0";
+        updateVolumeBar();
     });
 
-    // Fullscreen mode
+    // Fullscreen button click event
     fullscreenButton.addEventListener("click", function() {
-        var videoContainer = document.getElementById("video-container");
-        if (videoContainer.requestFullscreen) {
-            videoContainer.requestFullscreen();
-        } else if (videoContainer.mozRequestFullScreen) { // Firefox
-            videoContainer.mozRequestFullScreen();
-        } else if (videoContainer.webkitRequestFullscreen) { // Chrome and Safari
-            videoContainer.webkitRequestFullscreen();
-        } else if (videoContainer.msRequestFullscreen) { // IE/Edge
-            videoContainer.msRequestFullscreen();
+        if (video.requestFullscreen) {
+            video.requestFullscreen();
+        } else if (video.mozRequestFullScreen) { // Firefox
+            video.mozRequestFullScreen();
+        } else if (video.webkitRequestFullscreen) { // Chrome, Safari and Opera
+            video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) { // IE/Edge
+            video.msRequestFullscreen();
         }
     });
 
-    // Show overlay when video starts or pauses
-    video.addEventListener("play", function() {
-        overlay.style.opacity = 1;
-        setTimeout(function() {
-            overlay.style.opacity = 0;
-        }, 1500);
+    // Show/Hide volume bar on hover
+    muteButton.addEventListener("mouseenter", function() {
+        volumeBar.style.display = "block";
+    });
+    muteButton.addEventListener("mouseleave", function() {
+        volumeBar.style.display = "none";
     });
 
-    video.addEventListener("pause", function() {
-        overlay.style.opacity = 1;
-        setTimeout(function() {
-            overlay.style.opacity = 0;
-        }, 1500);
+    // Show seek tooltip on hover
+    seekBar.addEventListener("mousemove", function(e) {
+        var rect = seekBar.getBoundingClientRect();
+        var pos = (e.pageX - rect.left) / seekBar.offsetWidth;
+        var time = video.duration * pos;
+        seekTooltip.style.left = `${e.pageX - rect.left}px`;
+        seekTooltip.textContent = formatTime(time);
+        seekTooltip.style.display = "block";
     });
 
-    // Update the overlay icon when video ends
-    video.addEventListener("ended", function() {
-        overlay.style.opacity = 1;
-        playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
+    seekBar.addEventListener("mouseleave", function() {
+        seekTooltip.style.display = "none";
     });
 
-    // Stop video when space bar is pressed
-    document.addEventListener("keydown", function(event) {
-        if (event.code === "Space") {
-            togglePlayPause();
-        }
-    });
-
-    // Format time in minutes and seconds
-    function formatTime(seconds) {
-        var min = Math.floor(seconds / 60);
-        var sec = Math.floor(seconds % 60);
-        if (sec < 10) {
-            sec = "0" + sec;
-        }
-        return min + ":" + sec;
-    }
-
-    video.addEventListener("loadedmetadata", function() {
-        var duration = video.duration;
-        progressBar.max = duration;
-        durationSpan.textContent = formatTime(duration);
-    });
-
-    video.addEventListener("progress", function() {
-        var bufferedEnd = video.buffered.end(0);
-        var duration = video.duration;
-        if (duration > 0) {
-            progressBar.value = (bufferedEnd / duration) * 100;
-        }
-    });
-
-    video.addEventListener("timeupdate", function() {
-        var currentTime = video.currentTime;
-        progressBar.value = (currentTime / video.duration) * 100;
-    });
-
+    // Display loading overlay while buffering
     video.addEventListener("waiting", function() {
         loadingOverlay.style.display = "block";
     });
 
-    video.addEventListener("playing", function() {
+    video.addEventListener("canplay", function() {
         loadingOverlay.style.display = "none";
+    });
+
+    video.addEventListener("progress", function() {
+        if (video.buffered.length > 0) {
+            var bufferedEnd = video.buffered.end(video.buffered.length - 1);
+            var duration = video.duration;
+            if (duration > 0) {
+                progressBar.value = (bufferedEnd / duration) * 100;
+            }
+        }
+    });
+
+    // Right-click context menu
+    video.addEventListener("contextmenu", function(e) {
+        e.preventDefault();
+        contextMenu.style.top = `${e.pageY}px`;
+        contextMenu.style.left = `${e.pageX}px`;
+        contextMenu.style.display = "block";
+    });
+
+    document.addEventListener("click", function() {
+        contextMenu.style.display = "none";
+    });
+
+    document.getElementById("context-play-pause").addEventListener("click", function() {
+        togglePlayPause();
+    });
+
+    document.getElementById("context-mute").addEventListener("click", function() {
+        video.muted = !video.muted;
+        updateVolumeBar();
+    });
+
+    document.getElementById("context-fullscreen").addEventListener("click", function() {
+        if (video.requestFullscreen) {
+            video.requestFullscreen();
+        } else if (video.mozRequestFullScreen) {
+            video.mozRequestFullScreen();
+        } else if (video.webkitRequestFullscreen) {
+            video.webkitRequestFullscreen();
+        } else if (video.msRequestFullscreen) {
+            video.msRequestFullscreen();
+        }
+    });
+
+    // Show video duration
+    video.addEventListener("loadedmetadata", function() {
+        durationSpan.textContent = formatTime(video.duration);
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener("keydown", function(e) {
+        switch (e.key) {
+            case " ":
+            case "k":
+                togglePlayPause();
+                break;
+            case "m":
+                video.muted = !video.muted;
+                updateVolumeBar();
+                break;
+            case "f":
+                if (video.requestFullscreen) {
+                    video.requestFullscreen();
+                } else if (video.mozRequestFullScreen) {
+                    video.mozRequestFullScreen();
+                } else if (video.webkitRequestFullscreen) {
+                    video.webkitRequestFullscreen();
+                } else if (video.msRequestFullscreen) {
+                    video.msRequestFullscreen();
+                }
+                break;
+            case "ArrowLeft":
+                video.currentTime -= 5;
+                break;
+            case "ArrowRight":
+                video.currentTime += 5;
+                break;
+            case "ArrowUp":
+                video.volume = Math.min(video.volume + 0.1, 1);
+                updateVolumeBar();
+                break;
+            case "ArrowDown":
+                video.volume = Math.max(video.volume - 0.1, 0);
+                updateVolumeBar();
+                break;
+        }
     });
 });
