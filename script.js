@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", function() {
     var currentTimeSpan = document.getElementById("current-time");
     var durationSpan = document.getElementById("duration");
     var fullscreenButton = document.getElementById("fullscreen");
-
     var progressBar = document.getElementById("progress-bar");
     var loadingOverlay = document.querySelector(".loading-overlay");
 
@@ -16,10 +15,10 @@ document.addEventListener("DOMContentLoaded", function() {
     function togglePlayPause() {
         if (video.paused || video.ended) {
             video.play();
-            overlay.classList.add("playing");
+            playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
         } else {
             video.pause();
-            overlay.classList.remove("playing");
+            playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
         }
     }
 
@@ -32,11 +31,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Event listener for mute button click
     muteButton.addEventListener("click", function() {
         video.muted = !video.muted;
-        if (video.muted) {
-            muteButton.innerHTML = '<i class="fas fa-volume-mute"></i>';
-        } else {
-            muteButton.innerHTML = '<i class="fas fa-volume-up"></i>';
-        }
+        muteButton.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
     });
 
     // Event listener for seek bar input
@@ -77,19 +72,20 @@ document.addEventListener("DOMContentLoaded", function() {
         overlay.style.opacity = 1;
         setTimeout(function() {
             overlay.style.opacity = 0;
-        }, 1500); // Adjust the duration of the overlay appearance before fading out
+        }, 1500);
     });
 
     video.addEventListener("pause", function() {
         overlay.style.opacity = 1;
         setTimeout(function() {
             overlay.style.opacity = 0;
-        }, 1500); // Adjust the duration of the overlay appearance before fading out
+        }, 1500);
     });
 
     // Update the overlay icon when video ends
     video.addEventListener("ended", function() {
-        overlay.classList.remove("playing");
+        overlay.style.opacity = 1;
+        playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
     });
 
     // Stop video when space bar is pressed
@@ -112,6 +108,7 @@ document.addEventListener("DOMContentLoaded", function() {
     video.addEventListener("loadedmetadata", function() {
         var duration = video.duration;
         progressBar.max = duration;
+        durationSpan.textContent = formatTime(duration);
     });
 
     video.addEventListener("progress", function() {
@@ -124,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     video.addEventListener("timeupdate", function() {
         var currentTime = video.currentTime;
-        progressBar.value = currentTime;
+        progressBar.value = (currentTime / video.duration) * 100;
     });
 
     video.addEventListener("waiting", function() {
